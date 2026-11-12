@@ -54,14 +54,15 @@ antigravity: node .../index.js - √ Connected
 
 ---
 
-## ⚙️ Configuration & Model Selection
+## ⚙️ Configuration & Dynamic Model Selection
 
-The server defaults to **`gemini-3.8-flash-medium`** for maximum speed and 1M+ token context.
+The bridge provides two tools:
+- `ask_gemini_antigravity`: Executes queries using your Antigravity session.
+- `list_antigravity_models`: Queries `agy models` in real time so Claude Code always sees the latest models available in your Antigravity account without hardcoding model IDs.
 
-You can customize the model by setting the `AGY_MODEL` environment variable or by specifying the `model` argument in the tool call:
-- `gemini-3.8-flash-medium` (Default: Ultra-fast, 1M+ context)
-- `gemini-3.8-flash-high` (High reasoning, fast execution)
-- `gemini-4-argon-high` (Deep architecture reasoning & edge-case analysis)
+**Cost & Quota Optimization Strategy:**
+- By default, `ask_gemini_antigravity` uses a lightweight Flash model (`gemini-3.8-flash-medium` or `AGY_MODEL` env var) optimized for huge context ingestion (logs, repositories) with minimal quota impact.
+- When Claude needs deep architectural reasoning or critical second opinions, it can call `list_antigravity_models` and dynamically escalate to a flagship model (e.g., Gemini 4 Hydrogen/Argon).
 
 ---
 
@@ -71,13 +72,15 @@ Add the following directive to your global `~/.claude/CLAUDE.md`:
 
 ```markdown
 ## Colaboración y Delegación con Gemini en Antigravity (`ask_gemini_antigravity`)
-Usa proactivamente la herramienta MCP `ask_gemini_antigravity` para apoyarte en las fortalezas clave de los modelos de Gemini (ejecutados en Antigravity con tu suscripción local):
+Usa proactivamente las herramientas MCP de Antigravity para apoyarte en las fortalezas clave de Gemini (ejecutados en Antigravity con tu suscripción local):
 
 1. **Contexto masivo y repositorios**: Ante tareas con archivos grandes (>300 líneas), múltiples archivos, volcados de logs extensos o búsquedas globales, no satures tu ventana de contexto; delega la lectura e inspección a Gemini.
 2. **Segunda opinión y revisión crítica**: Antes de cambios arquitectónicos sensibles, refactorizaciones complejas o cuando quieras verificar casos borde, concurrencia o posibles riesgos de seguridad, consulta a Gemini como un revisor par.
 3. **Generación de pruebas exhaustivas**: Para diseñar matrices completas de tests unitarios, mocks complejos y casos extremos.
 4. **Ecosistemas Google y tecnologías modernas**: Ante dudas o implementaciones en Go, Android, Kotlin, Firebase, Google Cloud, APIs de Gemini, Dart/Flutter y TypeScript.
-5. **Elección de modelo**: Por defecto usará `gemini-3.8-flash-medium` (rápido y con 1M+ contexto). Para razonamiento arquitectónico profundo puedes especificar `model: "gemini-4-argon-high"`.
+5. **Selección dinámica de modelo y cuidado de cuota**:
+   - Por defecto omite el parámetro `model` para usar el modelo **Flash** rápido y de bajo consumo de cuota (ideal para el 85% de tareas de lectura masiva y resúmenes).
+   - Solo si la tarea requiere razonamiento arquitectónico muy complejo o validación crítica, consulta `list_antigravity_models` para ver qué modelos flagship están disponibles en ese momento y especifica el más adecuado.
 ```
 
 ---
