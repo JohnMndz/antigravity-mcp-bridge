@@ -61,8 +61,9 @@ The bridge provides two tools:
 - `list_antigravity_models`: Queries `agy models` in real time so Claude Code always sees the latest models available in your Antigravity account without hardcoding model IDs.
 
 **Cost & Quota Optimization Strategy:**
-- By default, `ask_gemini_antigravity` uses a lightweight Flash model (`gemini-3.8-flash-medium` or `AGY_MODEL` env var) optimized for huge context ingestion (logs, repositories) with minimal quota impact.
-- When Claude needs deep architectural reasoning or critical second opinions, it can call `list_antigravity_models` and dynamically escalate to a flagship model (e.g., Gemini 4 Hydrogen/Argon).
+- By default, `ask_gemini_antigravity` uses `gemini-4-hydrogen-medium` (or `AGY_MODEL` env var), which combines low latency, low quota impact, and strong symbol accuracy for massive context reading and guided execution.
+- Use `mode` (`"memory"`, `"review"`, `"execute"`, or `"general"`) to enforce strict anti-hallucination citations, critical audits, or test-verified edits.
+- When Claude needs deep architectural reasoning or critical second opinions, it can call `list_antigravity_models` and dynamically escalate to `gemini-4-argon-medium` or `gemini-pro-orchestrator-g1-pro`.
 
 ---
 
@@ -72,15 +73,17 @@ Add the following directive to your global `~/.claude/CLAUDE.md`:
 
 ```markdown
 ## Colaboración y Delegación con Gemini en Antigravity (`ask_gemini_antigravity`)
-Usa proactivamente las herramientas MCP de Antigravity para apoyarte en las fortalezas clave de Gemini (ejecutados en Antigravity con tu suscripción local):
+Usa proactivamente las herramientas MCP de Antigravity para que Gemini (1M+ tokens de contexto) actúe como memoria externa y brazo ejecutor de Claude:
 
-1. **Contexto masivo y repositorios**: Ante tareas con archivos grandes (>300 líneas), múltiples archivos, volcados de logs extensos o búsquedas globales, no satures tu ventana de contexto; delega la lectura e inspección a Gemini.
-2. **Segunda opinión y revisión crítica**: Antes de cambios arquitectónicos sensibles, refactorizaciones complejas o cuando quieras verificar casos borde, concurrencia o posibles riesgos de seguridad, consulta a Gemini como un revisor par.
-3. **Generación de pruebas exhaustivas**: Para diseñar matrices completas de tests unitarios, mocks complejos y casos extremos.
-4. **Ecosistemas Google y tecnologías modernas**: Ante dudas o implementaciones en Go, Android, Kotlin, Firebase, Google Cloud, APIs de Gemini, Dart/Flutter y TypeScript.
-5. **Selección dinámica de modelo y cuidado de cuota**:
-   - Por defecto omite el parámetro `model` para usar el modelo **Flash** rápido y de bajo consumo de cuota (ideal para el 85% de tareas de lectura masiva y resúmenes).
-   - Solo si la tarea requiere razonamiento arquitectónico muy complejo o validación crítica, consulta `list_antigravity_models` para ver qué modelos flagship están disponibles en ese momento y especifica el más adecuado.
+1. **Memoria anti-alucinación (`mode: "memory"`)**:
+   - Para búsquedas literales exactas usa `Grep` local.
+   - Si necesitas entender un flujo que abarca >3 archivos, archivos pesados (>300 líneas) o logs extensos, NO satures tu ventana de contexto: delega primero a `ask_gemini_antigravity` con `mode: "memory"` para obtener un mapa verificado de firmas, tipos, endpoints y `archivo:línea` reales antes de planificar o editar.
+   - En sesiones largas (post-compactación), usa `mode: "memory"` para verificar contratos y call sites antes de tocar archivos críticos.
+2. **Segunda opinión y revisión crítica (`mode: "review"`)**: Antes de cambios arquitectónicos sensibles o cuando quieras detectar riesgos de concurrencia, seguridad o casos borde, consulta a Gemini (puedes escalar a `gemini-4-argon-medium`).
+3. **Ejecución guiada (`mode: "execute"`)**: Para implementar refactors mecánicos según tu plan, escribir suites completas de tests o iterar errores de build/linter hasta dejarlos en verde. Revisa siempre el `git diff` al terminar.
+4. **Selección dinámica de modelo y cuidado de cuota**:
+   - Por defecto omite el parámetro `model` para usar **Gemini 4 Hydrogen** (`gemini-4-hydrogen-medium`), rápido, preciso y de bajo consumo de cuota.
+   - Escala a `gemini-4-argon-medium` para razonamiento arquitectónico profundo o a `gemini-pro-orchestrator-g1-pro` solo para subtareas autónomas complejas. Consulta `list_antigravity_models` si necesitas verificar los IDs activos.
 ```
 
 ---
